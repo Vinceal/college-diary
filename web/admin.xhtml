@@ -1,0 +1,398 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+    <h:head>
+        <title>Электронный журнал</title>
+        <style type="text/css">
+            .ui-datatable .ui-datatable-footer {
+                text-align:right;
+            }
+        </style>
+    </h:head>
+    <h:body>
+        <p:growl id="messages" showDetail="true"/>
+        <p:layout fullPage="true">
+            <p:layoutUnit position="north" size="50">
+                <h:form id="header">
+                    <h:outputText value="Приветствую, Администратор!" style="font-size: large;" />                     
+                    <p:commandButton action="#{mainBean.logout}" icon="ui-icon-power" value="Выйти" ajax="false" style="float: right;"/>
+                     <p:commandButton value="Настройки" icon="ui-icon-wrench" update=":messages" onclick="chnLP.show();" style="float: right;"/>
+                </h:form>
+            </p:layoutUnit>
+            <p:layoutUnit position="center">
+                <p:tabView orientation="left" id="all">
+                    <p:tab title="Группы" >        
+                        <h:form id="active">                                
+                            <p:dataTable value="#{groupsBean.grpModelAllColumn}"
+                                         paginator="true" rows="15"
+                                         selection="#{groupsBean.selectedgrp3}"
+                                         selectionMode="single"
+                                         var ="grp"
+                                         paginatorPosition="top"
+                                         >       
+                                <p:ajax event="rowSelect" update=":editGRP"/>
+                                <f:facet name="header">
+                                    Список всех групп
+                                </f:facet>
+                                <p:column headerText="id" style="width:10%">
+                                    #{grp.idGroup}                                
+                                </p:column>
+                                <p:column headerText="Маска" style="width:20%">
+                                    #{grp.nameOfGroup}                             
+                                </p:column>
+                                <p:column headerText="Курс" style="width:15%">  
+                                    #{grp.course}                                   
+                                </p:column>
+                                <p:column headerText="Активность" style="width:15%"> 
+                                    #{grp.active}
+                                </p:column>
+                                <p:column headerText="Начало обучения" style="width:20%">
+                                    #{grp.startDate}                                      
+                                </p:column>
+                                <p:column headerText="Окончание обучения" style="width:20%">  
+                                    #{grp.endDate}                                      
+                                </p:column>
+
+                                <f:facet name="footer" >                                           
+                                    <p:commandButton value="Добавить" icon="ui-icon-plus" onclick="addGrp.show();" style="float: left;"/>
+                                    <p:commandButton value="Изменить" icon="ui-icon-pencil"  onclick="edtGrp.show();" style="float: left;" />
+                                    <p:commandButton value="Удалить" icon="ui-icon-trash" onclick="dlg.show();" style="float: left;" />
+                                    <p:selectOneButton  value="#{groupsBean.numbut}" >  
+                                        <f:selectItem itemLabel="Активные" itemValue="1" />  
+                                        <f:selectItem itemLabel="Не активные" itemValue="2" />  
+                                        <f:selectItem itemLabel="Все" itemValue="3" />
+                                        <p:ajax update=":all" listener="#{groupsBean.onSelectOneButton}"/>
+                                    </p:selectOneButton>                                            
+                                </f:facet>
+                            </p:dataTable>
+                        </h:form>
+                    </p:tab>
+                    <p:tab title="Учащиеся">
+                        <h:form id="stud">
+                            <p:dataTable value="#{studBean.studModelAll}" var="studX"
+                                         paginator="true" rows="15"
+                                         selection="#{studBean.selectedStudAll}"
+                                         selectionMode="single"
+                                         paginatorPosition="top"
+                                         >
+                                <p:ajax event="rowSelect" update=":editSTUD :CRTS"/>
+                                <f:facet name="header">
+                                    Список всех учащихся  
+                                </f:facet>  
+                                <p:column headerText="id" filterBy="#{studX.idStudent}">
+                                    #{studX.idStudent}
+                                </p:column>
+                                <p:column headerText="Фамилия" filterBy="#{studX.lastName}" >
+                                    #{studX.lastName}
+                                </p:column>
+                                <p:column headerText="Имя" filterBy="#{studX.firstName}">
+                                    #{studX.firstName}
+                                </p:column>
+                                <p:column headerText="Отчество" filterBy="#{studX.patronomic}">
+                                    #{studX.patronomic}
+                                </p:column>
+                                <p:column headerText="id группы" filterBy="#{studX.idGroup}">
+                                    #{studX.idGroup}
+                                </p:column>
+                                <p:column headerText="Номер зачётки" filterBy="#{studX.numberRecordBook}">
+                                    #{studX.numberRecordBook}
+                                </p:column>
+                                <f:facet name="footer">
+                                    <p:commandButton value="Добавить" icon="ui-icon-plus" onclick="addStud.show()"/>
+                                    <p:commandButton value="Изменить" icon="ui-icon-pencil" onclick="edtStud.show();"/>
+                                    <p:commandButton value="Удалить"  icon="ui-icon-trash" onclick="delstuddlg.show();" />
+                                    <p:commandButton value="Обновить" icon="ui-icon-refresh" actionListener="#{studBean.setupListStud}" update=":all:stud"/>
+                                    <p:commandButton value="Учётная запись" icon="ui-icon-key" onclick="crtS.show()"/>
+                                </f:facet>
+                            </p:dataTable>
+                        </h:form>
+                    </p:tab>
+                    <p:tab title="Преподаватели">
+                        <h:form id="tchr">
+                            <p:dataTable value="#{tchrBean.tchrDM}" var="tchrX"
+                                         paginator="true" rows="15"
+                                         selection="#{tchrBean.selTechr}"
+                                         selectionMode="single"
+                                         paginatorPosition="top">
+                                <p:ajax event="rowSelect" update=":editTCHR :CRTT"/>
+                                <f:facet name="header">
+                                    Список всех преподавателей
+                                </f:facet> 
+                                <p:column headerText="id">
+                                    #{tchrX.id}
+                                </p:column>
+                                <p:column headerText="Фамилия">
+                                    #{tchrX.firstName}
+                                </p:column>
+                                <p:column headerText="Имя">
+                                    #{tchrX.lastName}
+                                </p:column>
+                                <p:column headerText="Отчество">
+                                    #{tchrX.patronomic}
+                                </p:column>
+                                <f:facet name="footer">
+                                    <p:commandButton value="Добавить" icon="ui-icon-plus" onclick="addTchr.show()"/>
+                                    <p:commandButton value="Изменить" icon="ui-icon-pencil" onclick="edtTchr.show();"/>
+                                    <p:commandButton value="Удалить"  icon="ui-icon-trash" onclick="delTchr.show();" />
+                                    <p:commandButton value="Учётная запись" icon="ui-icon-key" onclick="crtT.show();"/>
+                                </f:facet>
+                            </p:dataTable>
+                        </h:form>
+                    </p:tab>
+                    <p:tab title="Типы занятий">
+                        <h:form id="lssn">
+                            <p:dataTable value="#{lessnsBean.lessnDM}" var="lssnX"
+                                         paginator="true" rows="15"
+                                         selection="#{lessnsBean.selLessn}"
+                                         selectionMode="single"
+                                         paginatorPosition="top"
+                                         style="width: 450px;">
+                                <p:ajax event="rowSelect" update=":editLSSN"/>
+                                <f:facet name="header">
+                                    Список всех типов занятий
+                                </f:facet>
+                                <p:column headerText="id">
+                                    #{lssnX.id}
+                                </p:column>
+                                <p:column headerText="Тип занятия">
+                                    #{lssnX.type}
+                                </p:column>
+                                <f:facet name="footer">
+                                    <p:commandButton value="Добавить" icon="ui-icon-plus" onclick="addlssn.show();"/>
+                                    <p:commandButton value="Изменить" icon="ui-icon-pencil" onclick="edtlssn.show();"/>
+                                    <p:commandButton value="Удалить"  icon="ui-icon-trash" onclick="dellssn.show();" />
+                                </f:facet>
+                            </p:dataTable>
+                        </h:form>
+                    </p:tab>
+                </p:tabView>
+            </p:layoutUnit>            
+        </p:layout>
+        <p:dialog modal="true" header="Внимание!" widgetVar="dlg">
+            <h:form>
+                <h:outputText value="Вы действительно хотите удалить запись?"/>
+                <p:commandButton value="Да" 
+                                 actionListener="#{groupsBean.deleteRow}" 
+                                 update=":messages :all:active"
+                                 oncomplete="dlg.hide();"/>
+                <p:commandButton value="Нет" onclick="dlg.hide();"/>
+            </h:form>
+        </p:dialog>
+        <p:dialog modal="true" header="Добавление новой группы" widgetVar="addGrp">
+            <h:form>
+                <h:panelGrid columns="2">
+                    <h:outputText value="Маска группы"/>
+                    <p:inputText value="#{groupsBean.mask}"/>
+                    <h:outputText value="Курс"/>
+                    <p:inputMask mask="9" value="#{groupsBean.course}"/>
+                    <h:outputText value="Активная"/>
+                    <p:selectOneMenu value="#{groupsBean.active}">
+                        <f:selectItem itemLabel="Да" itemValue="true"/>
+                        <f:selectItem itemLabel="Нет" itemValue="false"/>
+                    </p:selectOneMenu>
+                    <h:outputText value="Начало обучения"/>
+                    <p:inputMask value="#{groupsBean.strDate}" mask="9999-99-99"/>
+                    <h:outputText value="Окончание обучения"/>
+                    <p:inputMask value="#{groupsBean.endDate}" mask="9999-99-99"/>
+                    <p:commandButton value="Да" icon="ui-icon-check" 
+                                     actionListener="#{groupsBean.addRow}" 
+                                     oncomplete="addGrp.hide()"
+                                     update=":all:active :messages"/>
+                    <p:commandButton value="Нет" icon="ui-icon-closethick" onclick="addGrp.hide();"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+        <p:dialog modal="true" header="Редактирование" widgetVar="edtGrp" id="editGRP">
+            <h:form>
+                <h:panelGrid columns="2">
+                    <h:outputText value="Маска группы"/>
+                    <p:inputText value="#{groupsBean.selectedgrp3.nameOfGroup}"/>
+                    <h:outputText value="Курс"/>
+                    <p:inputMask value="#{groupsBean.selectedgrp3.course}" mask="9"/>
+                    <h:outputText value="Активная"/>
+                    <p:selectOneMenu value="#{groupsBean.selectedgrp3.active}">
+                        <f:selectItem itemLabel="true" itemValue="true"/>
+                        <f:selectItem itemLabel="false" itemValue="false"/>
+                    </p:selectOneMenu>
+                    <h:outputText value="Начало обучения"/>
+                    <p:inputText value="#{groupsBean.selectedgrp3.startDate}" />
+                    <h:outputText value="Окончание обучения"/>
+                    <p:inputText value="#{groupsBean.selectedgrp3.endDate}" /> 
+                    <p:commandButton value="Да" update=":all:active :messages" oncomplete="edtGrp.hide();" icon="ui-icon-check" actionListener="#{groupsBean.updateRow}"/>
+                    <p:commandButton value="Нет" icon="ui-icon-closethick" onclick="edtGrp.hide();"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+        <p:dialog modal="true" header="Внимание!" widgetVar="delstuddlg">
+            <h:form>
+                <h:outputText value="Вы действительно хотите удалить запись?"/>
+                <tr/>
+                <p:commandButton value="Да" 
+                                 actionListener="#{studBean.deleteRow}" 
+                                 update=":all:stud :messages"
+
+                                 onclick="delstuddlg.hide();"/>
+                <p:commandButton value="Нет" onclick="delstuddlg.hide();"/>
+            </h:form>
+        </p:dialog>
+        <p:dialog modal="true" header="Редактирование" widgetVar="edtStud" id="editSTUD">
+            <h:form>
+                <h:panelGrid columns="2">
+                    <h:outputText value="Фамилия"/>
+                    <p:inputText value="#{studBean.selectedStudAll.lastName}"/>
+                    <h:outputText value="Имя"/>
+                    <p:inputText value="#{studBean.selectedStudAll.firstName}" />
+                    <h:outputText value="Отчество"/>
+                    <p:inputText value="#{studBean.selectedStudAll.patronomic}"/>
+                    <h:outputText value="id группы"/>
+                    <p:inputText value="#{studBean.selectedStudAll.idGroup}" />
+                    <h:outputText value="Номер зачётной книжки"/>
+                    <p:inputText value="#{studBean.selectedStudAll.numberRecordBook}" /> 
+                    <p:commandButton value="Да" update=":all:stud :messages" oncomplete="edtStud.hide();" icon="ui-icon-check" actionListener="#{studBean.updateRow}"/>
+                    <p:commandButton value="Нет" icon="ui-icon-closethick" onclick="edtStud.hide()"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+        <p:dialog modal="true" header="Добавление нового учащегося" widgetVar="addStud">
+            <h:form>
+                <h:panelGrid columns="2">
+                    <h:outputText value="Фамилия"/>
+                    <p:inputText value="#{studBean.lastName}"/>
+                    <h:outputText value="Имя"/>
+                    <p:inputText value="#{studBean.lastName}" />
+                    <h:outputText value="Отчество"/>
+                    <p:inputText value="#{studBean.patronomic}"/>
+                    <h:outputText value="id группы"/>
+                    <p:inputText value="#{studBean.idGroup}" />
+                    <h:outputText value="Номер зачётной книжки"/>
+                    <p:inputText value="#{studBean.numberRecordBook}" /> 
+                    <p:commandButton value="Да" update=":all:stud :messages" oncomplete="addStud.hide();" icon="ui-icon-check" actionListener="#{studBean.addRow}"/>
+                    <p:commandButton value="Нет" icon="ui-icon-closethick" onclick="addStud.hide()"/>    
+                </h:panelGrid>
+            </h:form>
+        </p:dialog> 
+        <p:dialog modal="true" header="Добавление нового преподавателя" widgetVar="addTchr">
+            <h:form>
+                <h:panelGrid columns="2">
+                    <h:outputText value="Номер преподавателя (id)"/>
+                    <p:inputText value="#{tchrBean.id}" />
+                    <h:outputText value="Фамилия"/>
+                    <p:inputText value="#{tchrBean.lastName}"/>
+                    <h:outputText value="Имя"/>
+                    <p:inputText value="#{tchrBean.firstName}"/>
+                    <h:outputText value="Отчество"/>
+                    <p:inputText value="#{tchrBean.patronomic}"/>                  
+                    <p:commandButton value="Да" icon="ui-icon-check" 
+                                     actionListener="#{tchrBean.addRow}" 
+                                     oncomplete="addTchr.hide()"
+                                     update=":all:tchr :messages"/>
+                    <p:commandButton value="Нет" icon="ui-icon-closethick" onclick="addTchr.hide();"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>        
+        <p:dialog modal="true" header="Внимание!" widgetVar="delTchr">
+            <h:form>
+                <h:outputText value="Вы действительно хотите удалить запись?"/>
+                <p:commandButton value="Да" 
+                                 actionListener="#{tchrBean.deleteRow}" 
+                                 update=":messages :all:tchr"
+                                 oncomplete="delTchr.hide();"/>
+                <p:commandButton value="Нет" onclick="delTchr.hide();"/>
+            </h:form>
+        </p:dialog>
+        <p:dialog modal="true" header="Редактирование" widgetVar="edtTchr" id="editTCHR">
+            <h:form>
+                <h:panelGrid columns="2">
+                    <h:outputText value="Фамилия"/>
+                    <p:inputText value="#{tchrBean.selTechr.lastName}"/>
+                    <h:outputText value="Имя"/>
+                    <p:inputText value="#{tchrBean.selTechr.firstName}"/>
+                    <h:outputText value="Отчество"/>
+                    <p:inputText value="#{tchrBean.selTechr.patronomic}"/>
+                    <p:commandButton value="Да" update=":all:tchr :messages" oncomplete="edtTchr.hide();" icon="ui-icon-check" actionListener="#{tchrBean.updateRow}"/>
+                    <p:commandButton value="Нет" icon="ui-icon-closethick" onclick="edtTchr.hide()"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+        <p:dialog modal="true" header="Добавление нового типа занятия" widgetVar="addlssn">
+            <h:form>
+                <h:panelGrid columns="2">
+                    <h:outputText value="Тип занятия"/>
+                    <p:inputText value="#{lessnsBean.type}" />             
+                    <p:commandButton value="Да" icon="ui-icon-check" 
+                                     actionListener="#{lessnsBean.addRow}" 
+                                     oncomplete="addlssn.hide()"
+                                     update=":all:lssn :messages"/>
+                    <p:commandButton value="Нет" icon="ui-icon-closethick" onclick="addlssn.hide()"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>        
+        <p:dialog modal="true" header="Внимание!" widgetVar="dellssn">
+            <h:form>
+                <h:outputText value="Вы действительно хотите удалить запись?"/>
+                <p:commandButton value="Да" 
+                                 actionListener="#{lessnsBean.deleteRow}" 
+                                 update=":messages :all:lssn"
+                                 oncomplete="dellssn.hide();"/>
+                <p:commandButton value="Нет" onclick="dellssn.hide();"/>
+            </h:form>
+        </p:dialog>
+        <p:dialog modal="true" header="Редактирование" widgetVar="edtlssn" id="editLSSN">
+            <h:form>
+                <h:panelGrid columns="2">
+                    <h:outputText value="Тип занятия"/>
+                    <p:inputText value="#{lessnsBean.selLessn.type}"/>                    
+                    <p:commandButton value="Да" update=":all:lssn :messages" oncomplete="edtlssn.hide();" icon="ui-icon-check" actionListener="#{lessnsBean.updateRow}"/>
+                    <p:commandButton value="Нет" icon="ui-icon-closethick" onclick="edtlssn.hide();"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+        <p:dialog modal="true" header="Создание уч. записи учащегося" widgetVar="crtS" id="CRTS">
+            <h:form>
+                <h:panelGrid columns="2">
+                    <h:outputText value="Логин"/>
+                    <h:outputText value="#{studBean.selectedStudAll.numberRecordBook}"/> 
+                    <h:outputText value="Пароль"/>
+                    <p:inputText value="#{studBean.pass}"/>
+                    <h:outputText value="Генерировать пароль"/>
+                    <p:commandButton icon="ui-icon-arrowrefresh-1-e" update=":CRTS" actionListener="#{studBean.genPass}" oncomplete="crtS.show;"/>
+                    <p:commandButton value="Да" update=":messages" oncomplete="crtS.hide();" icon="ui-icon-check" actionListener="#{studBean.createAccStud}"/>
+                    <p:commandButton value="Нет" icon="ui-icon-closethick" onclick="crtS.hide();"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+        <p:dialog modal="true" header="Создание уч. записи преподавателя" widgetVar="crtT" id="CRTT">
+            <h:form>
+                <h:panelGrid columns="2">
+                    <h:outputText value="Логин"/>
+                    <h:outputText value="#{tchrBean.selTechr.id}"/> 
+                    <h:outputText value="Пароль"/>
+                    <p:inputText value="#{tchrBean.pass}"/>
+                    <h:outputText value="Генерировать пароль"/>
+                    <p:commandButton icon="ui-icon-arrowrefresh-1-e" update=":CRTT" actionListener="#{tchrBean.genPass}" oncomplete="crtT.show;"/>
+                    <p:commandButton value="Да" update=":messages" oncomplete="crtT.hide();" icon="ui-icon-check" actionListener="#{tchrBean.createAccTchr}"/>
+                    <p:commandButton value="Нет" icon="ui-icon-closethick" onclick="crtT.hide()"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+        <p:dialog modal="true" header="Изменение логина и пароля" widgetVar="chnLP">
+            <h:form>
+                <h:panelGrid columns="2">
+                <h:outputText value="Желаемый логин"/>
+                <p:inputText value="#{mainBean.login}"/>
+                <h:outputText value="Текущий пароль"/>
+                <p:inputText value="#{mainBean.oldpass}" type="password"/>
+                <h:outputText value="Новый пароль"/>
+                <p:inputText value="#{mainBean.newpass}" type="password"/>
+                <h:outputText value="Повторите пароль"/>
+                <p:inputText value="#{mainBean.confirm}" type="password"/>
+                <p:commandButton value="Да" icon="ui-icon-check" update=":messages" onclick="chnLP.hide();" actionListener="#{mainBean.changeLogPass}"/>
+                <p:commandButton value="Нет" icon="ui-icon-cancel" onclick="chnLP.hide();"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+    </h:body>
+</html>

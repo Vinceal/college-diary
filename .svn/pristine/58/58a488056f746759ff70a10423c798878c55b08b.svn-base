@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+    <h:head>
+        <title>#{msgs.title}</title>
+        <script type="text/javascript">
+            PrimeFaces.locales ['ru'] = {
+                closeText: 'Закрыть',
+                prevText: 'Назад',
+                nextText: 'Вперёд',
+                monthNames: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                monthNamesShort: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
+                dayNames: ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Субота'],
+                dayNamesShort: ['Воск', 'Пон', 'Вт', 'Ср', 'Четв', 'Пят', 'Суб'],
+                dayNamesMin: ['В', 'П', 'Вт', 'С ', 'Ч', 'П ', 'Сб'],
+                weekHeader: 'Неделя',
+                firstDay: 1,
+                isRTL: false,
+                showMonthAfterYear: false,
+                yearSuffix: '',
+                timeOnlyTitle: 'Только время',
+                timeText: 'Время',
+                hourText: 'Час',
+                minuteText: 'Минута',
+                secondText: 'Секунда',
+                currentText: 'Сегодня',
+                ampm: false,
+                month: 'Месяц',
+                week: 'неделя',
+                day: 'День',
+                allDayText: 'Весь день'
+            };
+        </script>
+    </h:head>
+    <h:body>
+        <p:panel style="height: 50px;">
+            <h:form id="header">
+                <p:commandButton actionListener="#{user.logout()}" value="Выйти" ajax="false" ></p:commandButton>
+
+            </h:form>
+        </p:panel>       
+        <p:panel >            
+            <p:tabView  effect="blind" effectDuration="normal" id="tab1" >   
+
+                <p:tab title="#{msgs.tab1}" >                
+                    <h:form id="form">
+
+                        <h:panelGrid columns="4" cellpadding="15" border="1" >
+
+                            <p:dataTable  var="subX" value="#{subjectsBean.subModel}" 
+                                          scrollable="true"
+                                          scrollWidth="295"
+                                          style="width: 280px;"
+                                          scrollHeight="415"                             
+                                          selectionMode="single"
+                                          selection="#{subjectsBean.selectedSub}"
+                                          >
+                                <p:ajax event="rowSelect" update=":tab1:form" listener="#{subjectsBean.onRowSelect(event)}"/>
+                                <p:column > 
+                                    <f:facet name="header" >
+                                        <h:outputText value="Предметы"/>
+                                    </f:facet>
+                                    <h:outputText value="#{subX.subjects}"  />
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:dataTable  var="groupX" value="#{groupsBean.grpModel}" 
+                                          scrollable="true" 
+                                          style="width: 200px;"
+                                          scrollWidth="215"
+                                          scrollHeight="415"                               
+                                          selectionMode="single"
+                                          selection="#{groupsBean.selectedgrp}"
+                                          >
+                                <p:ajax event="rowSelect" update=":tab1:form" listener="#{groupsBean.onRowSelect(event)}"/>
+                                <p:column  > 
+                                    <f:facet name="header">
+                                        <h:outputText value="Группы"/>
+                                    </f:facet>
+                                    <h:outputText value="#{groupX.group}" />
+                                </p:column>
+                            </p:dataTable>  
+
+                            <p:dataTable  var="studX" value="#{studBean.studModel}" 
+                                          scrollable="true" 
+                                          scrollHeight="415"  
+                                          selectionMode="single"
+                                          scrollWidth="315"
+                                          selection="#{studBean.selectedStud}"
+                                          style="width: 300px;"
+                                          emptyMessage="Записей не найдено"
+                                          >
+                                <p:column > 
+                                    <f:facet name="header">
+                                        <h:outputText value="Студенты"/>
+                                    </f:facet>
+                                    <h:outputText value="#{studX.fio}" />
+                                </p:column>
+                            </p:dataTable>                   
+                            <p:panelGrid columns="1">        
+                                <p:calendar readonly="true" effect="slide" locale="ru" value="#{user.dateForCal}"  id="popupButtonCal" showOn="button" />
+                                <p:selectOneMenu value="#{user.rating}">
+                                    <f:selectItem itemLabel="н/б" itemValue="н/б"/>
+                                    <f:selectItem itemLabel="зачтено" itemValue="зачтено"/> 
+                                    <f:selectItem itemLabel="0" itemValue="0"/>
+                                    <f:selectItem itemLabel="1" itemValue="1"/>
+                                    <f:selectItem itemLabel="1" itemValue="2"/>
+                                    <f:selectItem itemLabel="1" itemValue="3"/>
+                                    <f:selectItem itemLabel="1" itemValue="1"/>
+                                    <f:selectItem itemLabel="1" itemValue="1"/>
+                                    <f:selectItem itemLabel="1" itemValue="1"/>
+                                    <f:selectItem itemLabel="1" itemValue="1"/>
+                                    <f:selectItem itemLabel="1" itemValue="1"/>
+                                    <f:selectItem itemLabel="1" itemValue="1"/>
+                                    <f:selectItem itemLabel="1" itemValue="1"/>
+
+                                </p:selectOneMenu>
+
+                            </p:panelGrid>
+
+                        </h:panelGrid>
+                    </h:form>    
+
+                </p:tab>
+                <p:tab title="#{msgs.tab2}">          
+                </p:tab>          
+            </p:tabView>
+        </p:panel>
+    </h:body>
+</html>
+

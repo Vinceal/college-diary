@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="/College_Diary" >
+  <Resource username="root" url="jdbc:mysql://localhost:3306/journal" type="javax.sql.DataSource" password="admin" name="jdbc/journal" driverClassName="com.mysql.jdbc.Driver" auth="Container"/>
+</Context>

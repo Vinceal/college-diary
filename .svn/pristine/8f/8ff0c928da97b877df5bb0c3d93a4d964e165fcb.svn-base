@@ -1,0 +1,60 @@
+package com.collegediary.stud;
+
+import java.io.Serializable;
+
+/**
+ *
+ * @author Vinceal
+ */
+public class Students implements Serializable {
+ private String lastName, firstName, patrnm, numRecBook, fio;
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getPatrnm() {
+        return patrnm;
+    }
+
+    public void setPatrnm(String patrnm) {
+        this.patrnm = patrnm;
+    }
+
+    public String getNumRecBook() {
+        return numRecBook;
+    }
+
+    public void setNumRecBook(String numRecBook) {
+        this.numRecBook = numRecBook;
+    }
+
+    public String getFio() {
+        return fio;
+    }
+
+    public void setFio(String fio) {
+        this.fio = fio;
+    }
+
+    public Students(String lastName, String firstName, String patrnm, String numRecBook) {
+        this.lastName = lastName;
+        this.firstName = firstName;
+        this.patrnm = patrnm;
+        this.numRecBook = numRecBook;
+        this.fio = lastName+" "+firstName+" "+patrnm;
+    }
+    
+}

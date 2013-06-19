@@ -1,0 +1,131 @@
+package com.collegediary.groups;
+
+import com.collegediary.stud.StudentsBean;
+import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import javax.el.ELContext;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import javax.sql.DataSource;
+import org.primefaces.event.SelectEvent;
+
+/**
+ *
+ * @author VinceAL
+ */
+@ManagedBean(name = "groupsBean")
+@SessionScoped
+public class GroupsBean implements Serializable {
+    
+    private transient DataSource ds; //DataSource
+    public ArrayList<Groups> grplist; // arrayList с объектами класса Groups
+    public Groups selectedgrp; //строка которая будет выбираться
+    private GroupDataModel grpModel; //модель данных 
+    
+    public String str;
+
+    public GroupDataModel getGrpModel() {
+        return grpModel;
+    }
+    //геттер и сеттер строки выбранной строки в таблице
+    public Groups getSelectedgrp() {
+        return selectedgrp;
+    }
+
+    public void setSelectedgrp(Groups selectedgrp) {
+        this.selectedgrp = selectedgrp;
+    }
+    
+       public GroupsBean() throws NamingException, SQLException {
+            grplist = new ArrayList<Groups>();
+            grpModel = new GroupDataModel(grplist);
+            ListfromDB();
+        
+    }
+      
+      public final void ListfromDB(String q) throws SQLException, NamingException {
+        grplist.clear();
+          
+        FacesContext fc = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) fc.getExternalContext().getRequest();
+        HttpSession session = request.getSession(false);
+        String param = (String) session.getAttribute("teacher");
+              
+        if (param!=null){
+        
+        Context ctx = new InitialContext();
+        Connection con = ds.getConnection();
+        ResultSet result;
+        ds = (DataSource) ctx.lookup("java:comp/env/jdbc/journal");
+        if (ds == null) {
+            System.err.print("Error with DataSource! Check the connection");
+        } else {
+        
+        PreparedStatement query;
+        
+        query = con.prepareStatement("select idGroup, Name_of_Group, Course from journal.group\n" +
+        "INNER JOIN subject ON journal.group.idGroup = subject.group_idGroup\n" +
+        "WHERE Subject_Name = '"+q+"'");
+        
+        result = query.executeQuery();
+        while (result.next()) {
+            grplist.add(new Groups(result.getString("Name_of_Group"),result.getString("Course"),
+                    result.getString("idGroup")));
+        }
+        }
+        con.close();
+        }
+        
+    }
+      public final void ListfromDB() throws SQLException, NamingException {
+        grplist.clear(); 
+        FacesContext fc = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) fc.getExternalContext().getRequest();
+        HttpSession session = request.getSession(false);
+        String param = (String) session.getAttribute("teacher");
+       
+        if (!param.equalsIgnoreCase("0")){
+        Context ctx = new InitialContext();
+        ds = (DataSource) ctx.lookup("java:comp/env/jdbc/journal");
+        Connection con = ds.getConnection();
+        ResultSet result;
+        PreparedStatement query;
+        query = con.prepareStatement("select idGroup, Name_of_Group, Course FROM journal.group ");
+        result = query.executeQuery();
+        while (result.next()) {
+            grplist.add(new Groups(result.getString("Name_of_Group"),result.getString("Course"),
+                    result.getString("idGroup")));
+        }
+        con.close();
+        }
+        
+    }
+      public void onRowSelect(SelectEvent event) throws NamingException, SQLException {
+        
+        //через ELContext обращаемся к scope пространству, откуда получаем нужный бин
+       ELContext elContext = FacesContext.getCurrentInstance().getELContext();
+       StudentsBean studentsBean = (StudentsBean) elContext.getELResolver().getValue(elContext, null, "studBean");
+       str = this.selectedgrp.getIdGroup();
+       studentsBean.ListfromDB(this.selectedgrp.getIdGroup());
+    
+    }
+}
+
+
+
+
+
+
+
+
+

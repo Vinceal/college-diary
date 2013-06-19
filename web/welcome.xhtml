@@ -1,0 +1,257 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+    <h:head>
+        <title>#{msgs.title}</title>
+        <link rel="stylesheet" type="text/css" href="style.css"/>
+        <script language="JavaScript" src="calendarRU.js" type="text/javascript"/>
+    </h:head>
+    <h:body>
+        <p:growl id="messages" showDetail="true"/> 
+        <p:layout fullPage="true">
+            <p:layoutUnit position="north" size="50">
+                <h:form id="header">
+                    <h:outputText value="Приветствую, #{mainBean.logo}!" style="font-size: large;" />
+                    <p:commandButton action="#{mainBean.logout}" icon="ui-icon-power" value="Выйти" ajax="false" style="float: right;"/>
+                    <p:commandButton value="Настройки" icon="ui-icon-wrench" onclick="chnLP.show();" style="float: right;"/>
+                </h:form>
+            </p:layoutUnit>
+            <p:layoutUnit position="center">
+                <p:tabView  effect="blind" effectDuration="normal" id="tab1" >
+                    <p:tab title="#{msgs.tab1}" >
+                        <h:panelGrid columns="2" columnClasses="first,second" >
+                            <h:form id="form">
+                                <h:panelGrid columns="3" cellpadding="15"> 
+                                    <p:dataTable  var="subX" value="#{subjectsBean.subModel}"
+                                                  emptyMessage="Записи отсутствуют"
+                                                  scrollable="true"
+                                                  scrollWidth="295"
+                                                  style="width: 280px;"
+                                                  scrollHeight="415"                             
+                                                  selectionMode="single"
+                                                  selection="#{subjectsBean.selectedSub}"
+                                                  >
+                                        <p:ajax event="rowSelect" update=":tab1:form" listener="#{subjectsBean.onRowSelect}"/>
+                                        <p:column > 
+                                            <f:facet name="header" >
+                                                <h:outputText value="Предметы"/>
+                                            </f:facet>
+                                            <h:outputText value="#{subX.subjects}"  />
+                                        </p:column>
+                                    </p:dataTable>
+                                    <p:dataTable  var="groupX" value="#{groupsBean.grpModel}"
+                                                  emptyMessage="Записи отсутствуют"
+                                                  scrollable="true" 
+                                                  style="width: 200px;"
+                                                  scrollWidth="215"
+                                                  scrollHeight="415"                               
+                                                  selectionMode="single"
+                                                  selection="#{groupsBean.selectedgrp}">
+                                        <p:ajax event="rowSelect" update=":tab1:form" listener="#{groupsBean.onRowSelect}"/>
+                                        <p:column  > 
+                                            <f:facet name="header">
+                                                <h:outputText value="Группы"/>
+                                            </f:facet>
+                                            <h:outputText value="#{groupX.group}" />
+                                        </p:column>
+                                    </p:dataTable> 
+                                    <p:dataTable  var="studX" value="#{studBean.studModel}"
+                                                  emptyMessage="Записи отсутствуют"
+                                                  scrollable="true" 
+                                                  scrollHeight="415"  
+                                                  selectionMode="single"
+                                                  scrollWidth="315"
+                                                  selection="#{studBean.selectedStud}"
+                                                  style="width: 300px;"
+                                                  >
+                                        <p:ajax event="rowSelect" update=":tab1:form" listener="#{studBean.onRowSelect}"/>
+                                        <p:column > 
+                                            <f:facet name="header">
+                                                <h:outputText value="Учащиеся"/>
+                                            </f:facet>
+                                            <h:outputText value="#{studX.fio}" />
+                                        </p:column>
+                                    </p:dataTable>
+                                </h:panelGrid>
+                            </h:form>  
+                            <p:panel >
+                                <h:form>
+                                    <h:panelGrid columns="2"  >
+                                        <h:outputLabel value="Выберите дату:"/>
+                                        <p:calendar effect="slide" 
+                                                    locale="ru" value="#{mainBean.dateForCalendar}"  
+                                                    showOn="button" 
+                                                    size="14" pattern="yyyy-MM-dd">
+                                            <p:ajax event="dateSelect" listener="#{mainBean.handleDateSelect}" update=":formdlg:display" />
+                                        </p:calendar>
+                                        <h:outputLabel value="Выберите тип занятия:"/>
+                                        <p:selectOneMenu value="#{mainBean.lessonType}" >
+                                            <f:selectItems value="#{mainBean.listLessonType}" />
+                                            <p:ajax update=":formdlg:display"  />
+                                        </p:selectOneMenu>
+                                        <h:outputLabel value="Выберите значение:"/>
+                                        <p:selectOneMenu value="#{mainBean.rating}" >
+                                            <f:selectItem itemLabel="н/б" itemValue="н/б"/>
+                                            <f:selectItem itemLabel="зачтено" itemValue="зачтено"/> 
+                                            <f:selectItem itemLabel="0" itemValue="0"/>
+                                            <f:selectItem itemLabel="1" itemValue="1"/>
+                                            <f:selectItem itemLabel="2" itemValue="2"/>
+                                            <f:selectItem itemLabel="3" itemValue="3"/>
+                                            <f:selectItem itemLabel="4" itemValue="4"/>
+                                            <f:selectItem itemLabel="5" itemValue="5"/>
+                                            <f:selectItem itemLabel="6" itemValue="6"/>
+                                            <f:selectItem itemLabel="7" itemValue="7"/>
+                                            <f:selectItem itemLabel="8" itemValue="8"/>
+                                            <f:selectItem itemLabel="9" itemValue="9"/>
+                                            <f:selectItem itemLabel="10" itemValue="10"/>
+                                            <p:ajax update=":formdlg:display"  />
+                                        </p:selectOneMenu>
+                                        <p:commandButton value="Поставить" icon="ui-icon-plus" onclick="dlg.show();" >
+                                            <p:ajax update=":formdlg:display"  />
+                                        </p:commandButton>
+                                    </h:panelGrid>
+                                </h:form>
+                            </p:panel>
+                        </h:panelGrid>
+                    </p:tab>
+                    <p:tab title="#{msgs.tab2}">
+                        <h:panelGrid columns="2" columnClasses="first,second">
+                            <h:form id="form2">
+                                <h:panelGrid columns="2" cellpadding="15">
+                                    <p:dataTable  var="groupX" value="#{groupsBeanSecond.grpModel}"
+                                                  emptyMessage="Записи отсутствуют"
+                                                  scrollable="true" 
+                                                  style="width: 200px;"
+                                                  scrollWidth="215"
+                                                  scrollHeight="415"                               
+                                                  selectionMode="single"
+                                                  selection="#{groupsBeanSecond.selectedgrp}"
+                                                  >
+                                        <p:ajax event="rowSelect" update=":tab1:form2 :tab1:form3" listener="#{groupsBeanSecond.onRowSelect}"/>
+                                        <p:column  > 
+                                            <f:facet name="header">
+                                                <h:outputText value="Группы"/>
+                                            </f:facet>
+                                            <h:outputText value="#{groupX.group}" />
+                                        </p:column>
+                                    </p:dataTable> 
+                                    <p:dataTable  var="studX" value="#{studBean.studModel}"
+                                                  emptyMessage="Записи отсутствуют"
+                                                  scrollable="true" 
+                                                  scrollHeight="415"  
+                                                  scrollWidth="315"
+                                                  style="width: 300px;"
+                                                  >
+                                        <p:column > 
+                                            <f:facet name="header">
+                                                <h:outputText value="Учащиеся"/>
+                                            </f:facet>
+                                            <h:outputText value="#{studX.fio}" />
+                                        </p:column>
+                                    </p:dataTable>
+                                </h:panelGrid>
+                            </h:form>
+                            <p:panel>
+                                <h:form id="form3">
+                                    <h:panelGrid columns="2" columnClasses="first,second">
+                                        <h:outputText value="Выбранная группа:"/>
+                                        <h:outputText value="#{groupsBeanSecond.selectedgrp.group}"/>
+                                        <h:outputText value="Введите название предмета:"/>
+                                        <p:inputText value="#{subjectsBean.subName}" >
+                                            <p:ajax event="blur" update=":formdlg:display2" /> 
+                                        </p:inputText>
+                                        <h:outputText value="Выберите дату налача"/>
+                                        <p:calendar mode="popup" value="#{mainBean.firstDate}" pattern="yyyy-MM-dd" locale="ru">
+                                            <p:ajax event="dateSelect" listener="#{mainBean.handleSelectFristDate}" update=":formdlg:display2"/>
+                                        </p:calendar>
+                                        <h:outputText value="Выберите дату окончания"/>
+                                        <p:calendar mode="popup" value="#{mainBean.lastDate}" pattern="yyyy-MM-dd" locale="ru">
+                                            <p:ajax event="dateSelect" listener="#{mainBean.handleSelectLasttDate}" update=":formdlg:display2"/>
+                                        </p:calendar>
+                                        <p:commandButton value="Создать" icon="ui-icon-plus" oncomplete="dlg2.show()" >
+                                            <p:ajax update=":formdlg:second"  />
+                                        </p:commandButton>
+                                    </h:panelGrid>
+                                </h:form>
+                            </p:panel>
+                        </h:panelGrid>
+                    </p:tab>
+                    <p:tab title="#{msgs.tab3}">
+                        <h:form id="form4">
+                            <p:dataTable  var="operX" value="#{bufferBean.buffModel}"
+                                          emptyMessage="Записи отсутствуют"
+                                          scrollable="true" 
+                                          style="width: 800px;"
+                                          scrollWidth="815"
+                                          scrollHeight="415"                               
+                                          selectionMode="single"
+                                          selection="#{bufferBean.selectedOper}"
+                                          >
+                                <p:column width="40"> 
+                                    <f:facet name="header">
+                                        <h:outputText value="№п/п"/>
+                                    </f:facet>
+                                    <h:outputText value="#{operX.idOperation}" />
+                                </p:column>
+                                <p:column> 
+                                    <f:facet name="header">
+                                        <h:outputText value="Вполненые действия"/>
+                                    </f:facet>
+                                    <h:outputText value="#{operX.operation}" />
+                                </p:column>                                        
+                            </p:dataTable>
+                            <p:commandButton value="Удалить" icon="ui-icon-trash" actionListener="#{action.deleteSelectedRow}"
+                                             update=":messages :tab1:form4"></p:commandButton>
+                        </h:form>
+                    </p:tab>
+                </p:tabView>
+            </p:layoutUnit>
+        </p:layout>
+        <h:form id="formdlg">            
+            <p:dialog modal="true" header="Вы действительно хотите добавить: ?" widgetVar="dlg" id="first">
+                <h:panelGrid columns="1" id="display">                    
+                    <h:outputText value="#{studBean.selectedStud.fio}"/>                
+                    <h:outputText value="#{groupsBean.selectedgrp.group}"/>                
+                    <h:outputText value="#{subjectsBean.selectedSub.subjects}"/>               
+                    <h:outputText value="#{mainBean.selDate}"/>                
+                    <h:outputText value="#{mainBean.lessonType}"/>                
+                    <h:outputText value="#{mainBean.rating}"/> 
+                    <h:panelGrid columns="2">
+                        <p:commandButton value="Да" actionListener="#{action.addNewRating}" oncomplete="dlg.hide();"
+                                         update=":messages :tab1:form4"></p:commandButton>
+                        <p:commandButton value="Нет" onclick="dlg.hide();"></p:commandButton>
+                    </h:panelGrid>
+                </h:panelGrid>
+            </p:dialog>
+            <p:dialog modal="true" header="Вы действительно хотите добавить: ?" widgetVar="dlg2" id="second">
+                <h:panelGrid columns="2" id="display2"> 
+                    <h:outputText value="Предмет:"/><h:outputText value="#{subjectsBean.subName}"/>
+                    <h:outputText value="Группа:"/><h:outputText value="#{groupsBeanSecond.selectedgrp.group}"/>
+                    <h:outputText value="Дата начала:"/><h:outputText value="#{mainBean.firstDateS}"/>
+                    <h:outputText value="Дата окончания:"/><h:outputText value="#{mainBean.lastDateS}"/>                    
+                    <p:commandButton value="Да" actionListener="#{subjectsBean.createNewSubject}"  oncomplete="dlg2.hide();" update=":messages"/>
+                    <p:commandButton value="Нет" onclick="dlg2.hide();"/>                    
+                </h:panelGrid>
+            </p:dialog>
+        </h:form>
+        <p:dialog modal="true" header="Изменение логина и пароля" widgetVar="chnLP">
+            <h:form>
+                <h:panelGrid columns="2">
+                <h:outputText value="Желаемый логин"/>
+                <p:inputText value="#{mainBean.login}"/>
+                <h:outputText value="Текущий пароль"/>
+                <p:inputText value="#{mainBean.oldpass}" type="password"/>
+                <h:outputText value="Новый пароль"/>
+                <p:inputText value="#{mainBean.newpass}" type="password"/>
+                <h:outputText value="Повторите пароль"/>
+                <p:inputText value="#{mainBean.confirm}" type="password"/>
+                <p:commandButton value="Да" icon="ui-icon-check" update=":messages" onclick="chnLP.hide;" actionListener="#{mainBean.changeLogPass}"/>
+                <p:commandButton value="Нет" icon="ui-icon-cancel" onclick="chnLP.hide();"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+    </h:body>
+</html>

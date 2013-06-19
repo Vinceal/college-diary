@@ -1,0 +1,117 @@
+package com.collegediary.subjects;
+
+import com.collegediary.groups.Groups;
+import com.collegediary.groups.GroupsBean;
+import com.collegediary.stud.StudentsBean;
+import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.el.ELContext;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import javax.sql.DataSource;
+import org.primefaces.event.SelectEvent;
+
+/**
+ *
+ * @author VinceAL
+ */
+@ManagedBean(name = "subjectsBean")
+@SessionScoped
+public class SubjectsBean implements Serializable {
+
+    private transient DataSource ds;
+    public ArrayList<Subjects> sub;
+    public Subjects selectedSub;
+    private SubDataModel subModel;
+
+    public SubDataModel getSubModel() {
+        return subModel;
+    }
+
+    public Subjects getSelectedSub() {
+        return selectedSub;
+    }
+
+    public void setSelectedSub(Subjects selectedSub) {
+        this.selectedSub = selectedSub;
+    }
+
+    public SubjectsBean() throws NamingException, SQLException {
+
+        try {
+            Context ctx = new InitialContext();
+            ds = (DataSource) ctx.lookup("java:comp/env/jdbc/journal");
+            if (ds == null) {
+                System.err.print("Error with DataSource! Check the connection");
+            } else {
+                
+                ListfromDB();
+                
+            }
+        } catch (Exception e) {
+            System.err.print(e);
+        }
+
+    }
+
+    public final void ListfromDB() throws SQLException {
+        sub = new ArrayList<Subjects>();
+        sub.clear();
+        FacesContext fc = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) fc.getExternalContext().getRequest();
+        HttpSession session = request.getSession(false);
+        String param = (String) session.getAttribute("teacher");
+
+        if (!param.equalsIgnoreCase("0")) {
+            ResultSet result;
+            Connection con = null;
+            try {
+                con = ds.getConnection();
+                if (con == null) {
+                    throw new SQLException("Нет соединения с базой");
+                }
+                PreparedStatement query;
+                query = con.prepareStatement("select idSubject,Subject_Name from subject where endDate> CURDATE()"
+                        + "and teacher_idTeacher =? GROUP BY Subject_Name");
+                query.setString(1, param);
+                result = query.executeQuery();
+                while (result.next()) {
+                    sub.add(new Subjects(result.getString("Subject_Name"), result.getString("idSubject")));
+
+                }
+            } finally {
+                if (con != null) {
+                    con.close();
+                }
+            }
+        } else {
+            System.err.print("В сессии не обнаружено параметра :(");
+        }
+        subModel = new SubDataModel(sub);
+    }
+
+    public void onRowSelect(SelectEvent event) throws NamingException, SQLException {
+
+        //через ELContext обращаемся к scope пространству, откуда получаем нужный бин
+        ELContext elContext = FacesContext.getCurrentInstance().getELContext();
+        GroupsBean groupsBean = (GroupsBean) elContext.getELResolver().getValue(elContext, null, "groupsBean");
+        groupsBean.ListfromDB(this.selectedSub.getSubjects());
+        Groups grp = (Groups)groupsBean.grplist.get(0);
+        String idGroup = grp.getIdGroup();
+        StudentsBean studentsBean = (StudentsBean) elContext.getELResolver().getValue(elContext, null, "studBean");
+        studentsBean.stud.clear();
+        studentsBean.ListfromDB(idGroup);
+
+    }
+}

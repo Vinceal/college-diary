@@ -1,0 +1,146 @@
+package com.collegediary.stud;
+
+import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import javax.sql.DataSource;
+
+/**
+ *
+ * @author Vinceal
+ */
+@ManagedBean(name = "studBean")
+@SessionScoped
+public class StudentsBean implements Serializable{
+    
+    private transient DataSource ds;
+    public ArrayList<Students> stud;
+    public Students selectedStud;
+    private StudDataModel studModel;
+
+    public Students getSelectedStud() {
+        return selectedStud;
+    }
+    
+    public void setSelectedStud(Students selectedStud) {
+        this.selectedStud = selectedStud;
+    }
+    
+    public StudDataModel getStudModel() {
+        return studModel;
+    }   
+    
+     public StudentsBean() throws SQLException, NamingException{      
+           
+        try {
+            Context ctx = new InitialContext();
+            ds = (DataSource) ctx.lookup("java:comp/env/jdbc/journal");
+            if (ds == null) {
+                System.err.print("Error with DataSource! Check the connection");
+            } else {
+                
+                ListfromDB();
+                
+            }
+        } catch (Exception e) {
+            System.err.print(e);
+        }
+           
+
+    }
+     
+        public final void ListfromDB() throws SQLException, NamingException {
+        stud = new ArrayList<Students>();
+        stud.clear();   
+            
+        FacesContext fc = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) fc.getExternalContext().getRequest();
+        HttpSession session = request.getSession(false);
+        String param = (String) session.getAttribute("teacher");
+        
+        if (!param.equalsIgnoreCase("0")) {
+            ResultSet result;
+            Connection con = null;
+            try {
+                Context ctx = new InitialContext();
+                ds = (DataSource) ctx.lookup("java:comp/env/jdbc/journal");
+                con = ds.getConnection();
+                if (con == null) {
+                    throw new SQLException("Нет соединения с базой");
+                }
+                PreparedStatement query;
+                query = con.prepareStatement("SELECT Last_Name, First_Name, Patronomic,"
+                        + " Number_recordBook FROM journal.student");
+                result = query.executeQuery();
+                while (result.next()) {
+                    stud.add(new Students(result.getString("Last_Name"),
+                            result.getString("First_Name"),
+                            result.getString("Patronomic"),
+                            result.getString("Number_recordBook")
+                            ));
+                }
+            } finally {
+                if (con != null) {
+                    con.close();
+                }
+            }
+        } else {
+            System.err.print("В сессии не обнаружено параметра :(");
+        }
+        studModel = new StudDataModel(stud);
+    }
+        public final void ListfromDB(String quest) throws SQLException, NamingException {
+         stud = new ArrayList<Students>();
+         stud.clear();   
+            
+        FacesContext fc = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) fc.getExternalContext().getRequest();
+        HttpSession session = request.getSession(false);
+        String param = (String) session.getAttribute("teacher");
+        
+        if (!param.equalsIgnoreCase("0")) {
+            ResultSet result;
+            Connection con = null;
+            try {
+                Context ctx = new InitialContext();
+                ds = (DataSource) ctx.lookup("java:comp/env/jdbc/journal");
+                con = ds.getConnection();
+                if (con == null) {
+                    throw new SQLException("Нет соединения с базой");
+                }
+                PreparedStatement query;
+                query = con.prepareStatement("SELECT Last_Name, First_Name, Patronomic,"
+                        + " Number_recordBook FROM journal.student "
+                        + "where group_idGroup =?");
+                query.setString(1, quest);
+                result = query.executeQuery();
+                while (result.next()) {
+                    stud.add(new Students(result.getString("Last_Name"),
+                            result.getString("First_Name"),
+                            result.getString("Patronomic"),
+                            result.getString("Number_recordBook")
+                            ));
+                }
+            } finally {
+                if (con != null) {
+                    con.close();
+                }
+            }
+        } else {
+            System.err.print("В сессии не обнаружено параметра :(");
+        }
+        studModel = new StudDataModel(stud);
+    }
+    
+}

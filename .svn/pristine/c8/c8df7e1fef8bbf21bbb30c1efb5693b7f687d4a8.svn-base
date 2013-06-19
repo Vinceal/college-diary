@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <f:loadBundle basename="com.collegediary.main.messages" var="msgs"/>
+        <title>#{msgs.title}</title>
+        
+    </h:head>
+    <h:body>
+        <h:form>
+        <p:panel id="panel" header="Авторизация">      
+            
+        <h:panelGrid columns="3">  
+            
+            <h:outputLabel for="login" value="Логин: " />  
+            <p:inputText id="login" value="#{user.userlogin}" required="true" label="Login">  
+                <f:validateLength minimum="2" />
+                
+            </p:inputText>  
+            <p:message for="login" id="msgLogin" display="icon"/>  
+  
+            <h:outputLabel for="password" value="Пароль: " />  
+            <p:inputText id="password" value="#{user.password}" label="Password" required="true" type="password">  
+                <f:validateLength minimum="2"  />  
+                <p:ajax update="msgPassword" event="keyup" />  
+            </p:inputText>  
+            <p:message for="password" id="msgPassword" display="icon"/>  
+  
+        </h:panelGrid>  
+  
+            <p:commandButton id="btn" ajax="false" action="#{user.login()}" value="Войти" />  
+            
+     </p:panel>
+</h:form>
+    </h:body>
+</html>
+

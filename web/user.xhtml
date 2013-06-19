@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      >
+    <h:head>
+        <title>#{msgs.title}</title>
+    </h:head>
+    <h:body>
+         <p:growl id="messages" showDetail="true"/>
+        <p:layout fullPage="true">
+            <p:layoutUnit position="north" size="50">
+                <h:form id="header">
+                    <h:outputText value="Приветствую, #{mainBean.logo}!" style="font-size: large;" />
+                   <p:commandButton action="#{mainBean.logout}" icon="ui-icon-power" value="Выйти" ajax="false" style="float: right;"/>
+                   <p:commandButton value="Настройки" icon="ui-icon-wrench" update=":messages" onclick="chnLP.show();" style="float: right;"/>
+                </h:form> 
+            </p:layoutUnit>
+            <p:layoutUnit position="center">
+                <h:form id="center" style="float: left; margin-left:15px;">
+                    <p:dataTable  id="prnt" var="subX" value="#{subjectsBean.subModel}" 
+                                  emptyMessage="Записи отсутствуют"
+                                  scrollable="true"
+                                  scrollWidth="295"
+                                  style="width: 280px;"
+                                  scrollHeight="415"                             
+                                  selectionMode="single"
+                                  selection="#{subjectsBean.selectedSub}"
+                                  >
+                        <p:ajax event="rowSelect" update=":rating" listener="#{ratingBean.setupListRating}"/>
+                        <p:column > 
+                            <f:facet name="header" >
+                                <h:outputText value="Предметы"/>
+                            </f:facet>
+                            <h:outputText value="#{subX.subjects}"  />
+                        </p:column>
+                    </p:dataTable>                        
+                </h:form>             
+                <h:form id="rating" style="float: left; margin-left:15px;">
+                    <p:dataTable value="#{ratingBean.rtg}" var="rtgX" 
+                                 emptyMessage="Записи не найдены или отсутствуют"
+                                 scrollable="true"
+                                 scrollWidth="495"
+                                 style="width: 480px;"
+                                 scrollHeight="415">
+                        <f:facet name="header">
+                            <h:outputText value="#{subjectsBean.selectedSub.subjects}"/>
+                        </f:facet>
+                        <p:column sortBy="#{rtgX.coupleDate}" headerText="Дата" >
+                            <h:outputText value="#{rtgX.coupleDate}"/>
+                        </p:column>
+                        <p:column headerText="Тип занятия">
+                            <h:outputText value="#{rtgX.lesson_Type}"/>
+                        </p:column>
+                        <p:column headerText="Оценка">
+                            <h:outputText value="#{rtgX.rating}"/>
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+                <h:form style="float: left; margin-left:15px;">
+                    <h:panelGrid columns="1">
+                        <p:selectOneMenu value="#{ratingBean.lessonType}" >
+                            <f:selectItems value="#{ratingBean.listLessonType}" />
+                            <p:ajax update=":rating" listener="#{ratingBean.setupIdLessonType}"/>
+                        </p:selectOneMenu>
+                        <p:commandButton value="Печать" icon="ui-icon-print" type="button" style="float: right;">  
+                            <p:printer target=":rating" />  
+                        </p:commandButton>
+                    </h:panelGrid>
+                </h:form>
+
+            </p:layoutUnit>
+        </p:layout>
+        <p:dialog modal="true" header="Изменение логина и пароля" widgetVar="chnLP">
+            <h:form>
+                <h:panelGrid columns="2">
+                <h:outputText value="Желаемый логин"/>
+                <p:inputText value="#{mainBean.login}"/>
+                <h:outputText value="Текущий пароль"/>
+                <p:inputText value="#{mainBean.oldpass}" type="password"/>
+                <h:outputText value="Новый пароль"/>
+                <p:inputText value="#{mainBean.newpass}" type="password"/>
+                <h:outputText value="Повторите пароль"/>
+                <p:inputText value="#{mainBean.confirm}" type="password"/>
+                <p:commandButton value="Да" icon="ui-icon-check" update=":messages" onclick="chnLP.hide();" actionListener="#{mainBean.changeLogPass}"/>
+                <p:commandButton value="Нет" icon="ui-icon-cancel" onclick="chnLP.hide();"/>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+    </h:body>
+</html>
+

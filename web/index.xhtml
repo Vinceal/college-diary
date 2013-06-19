@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <h:head>
+        <f:loadBundle basename="com.collegediary.main.messages" var="msgs"/>
+        <title>#{msgs.title}</title>
+    </h:head>
+    <h:body>
+        <h:form>           
+            <p:panel id="panel" header="Авторизация" style="width: 270px; height: 146px; position: absolute; left: 50%; top: 50%; margin-left: -125px; margin-top: -73px;">      
+
+                <h:panelGrid columns="2">  
+                    <h:outputLabel for="login" value="Логин: " />  
+                    <p:inputText id="login" value="#{mainBean.userlogin}" required="true" label="Login" /> 
+                    <h:outputLabel for="password" value="Пароль: " />  
+                    <p:inputText id="password" value="#{mainBean.password}" label="Password" required="true" type="password"/>
+                </h:panelGrid> 
+                <p:commandButton id="btn" ajax="false" icon="ui-icon-home" action="#{mainBean.login}" value="Войти" style="float: right;"/>
+            </p:panel>
+        </h:form>
+    </h:body>
+</html>
+

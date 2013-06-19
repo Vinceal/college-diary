@@ -1,0 +1,188 @@
+package com.collegediary.main;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.sql.DataSource;
+
+/**
+ *
+ * @author VinceAL
+ */
+@ManagedBean(name = "user")
+@SessionScoped
+public class Main implements Serializable {
+
+    private Date dateForCal; //переменная для значения календаря
+    private String rating;
+    public String teacher, student;
+    private String userlogin, password; //логин и пароль
+    private boolean loggedIn;
+    private static final Logger logger = Logger.getLogger("com.collegediary.main");
+    private transient DataSource ds;
+
+    public String getRating() {
+        return rating;
+    }
+
+    public void setRating(String rating) {
+        this.rating = rating;
+    }
+
+    public Date getDateForCal() {
+        return dateForCal;
+    }
+
+    public void setDateForCal(Date dateForCal) {
+        this.dateForCal = dateForCal;
+    }
+
+    public String getUserlogin() {
+        return userlogin;
+    }
+
+    public void setUserlogin(String userlogin) {
+        this.userlogin = userlogin;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String login() throws NamingException, IOException {
+        try {
+            doLogin();
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, "проблема авторизации", ex);
+            return "error";// возвращаем строку, используем навигацию
+        }
+
+        if (loggedIn) {
+
+            //объявляем контекст и помещаем в через него в сессию имя пользователя
+            ///через контекст получаем текущую сессию
+            //обращаемся к сессии и помещаем логин пользователя!
+
+            if (teacher.equalsIgnoreCase("0")) {
+                if (student != null) {
+                    /*FacesContext fc = FacesContext.getCurrentInstance();
+                     HttpServletRequest request = (HttpServletRequest) fc.getExternalContext().getRequest();
+                     request.setAttribute("student", student);*/
+
+                    FacesContext fc = FacesContext.getCurrentInstance();
+                    HttpServletRequest request = (HttpServletRequest) fc.getExternalContext().getRequest();
+                    HttpSession session = request.getSession(true);// открываем новый сеанс сессии
+                    session.setAttribute("student", student);
+
+                    return "user";
+                }
+            } else {
+                FacesContext fc = FacesContext.getCurrentInstance();
+                HttpServletRequest request = (HttpServletRequest) fc.getExternalContext().getRequest();
+                HttpSession session = request.getSession(true);// открываем новый сеанс сессии
+                session.setAttribute("teacher", teacher);
+                this.userlogin = null;
+                this.password = null;
+                return "welcome";
+            }
+        }
+        //если в переменной ничего нет, то возвращаем строку и перенаправляем пользов.
+        return "sorry";
+    }
+
+    public void doLogin() throws SQLException, NamingException {
+
+        java.sql.Connection con = null;
+        try {
+            Context ctx = new InitialContext();
+            ds = (DataSource) ctx.lookup("java:comp/env/jdbc/journal");
+
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "проблема авторизации", e);
+        } finally {
+        }
+
+        if (ds == null) {
+            throw new SQLException("Не обнаружена база данных DataSource=NULL");
+        }
+        try {
+            con = ds.getConnection();
+            if (con == null) {
+                throw new SQLException("Нет соединения с базой");
+            }
+            try {
+                //получили соединение с базой данных и пытаемся 
+                //получить логин и пароль введённый пользователем
+                PreparedStatement passQuery = con.prepareStatement("select password,"
+                        + " teacher_idTeacher, student_idStudent from users "
+                        + "where login=? and password=?");
+                passQuery.setString(1, userlogin); //получаем строки логин и пароль с базы данных
+                passQuery.setString(2, password);
+                ResultSet result = passQuery.executeQuery();
+                if (!result.next()) {
+                    return; /*проверяем, есть ли такие записи в базе данных, 
+                     *      если они отсутствуют то выполняем возврат из блока
+                     */
+                }
+
+                teacher = null;
+                /*повторно проверяем введённый пароль и присваеваем переменной
+                 * значение авторизации. true|false
+                 */
+                String storedPass = result.getString("password");
+                loggedIn = password.equals(storedPass.trim());
+
+                /*
+                 * если данные введённые пользователем присутсвуют - то продол-
+                 * жаем получаем информацию о пользователе, узнаем, это студент
+                 * или преподаватель и присваиваем в нужную переменную их id
+                 */
+                teacher = result.getString("teacher_idTeacher");
+                student = result.getString("student_idStudent");
+
+            } catch (SQLException e) {
+                //при ошибках выполнения SQL запрос выполняем перехват exeption
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, e);
+            }
+        } finally {
+            /*  проверяем если соединение открыто, то закрываем его в обязаельном
+             * порядке в блоке finally
+             */
+            if (con != null) {
+                con.close();
+            }
+        }
+    }
+
+    public void logout() throws IOException {
+
+        FacesContext fc = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) fc.getExternalContext().getRequest();
+        HttpServletResponse response = (HttpServletResponse) fc.getExternalContext().getResponse();
+        HttpSession session = request.getSession(true);// открываем новый сеанс сессии
+        session.removeAttribute("student");
+        session.removeAttribute("teacher");
+        session.invalidate();
+        response.sendRedirect("index.xhtml");
+
+
+    }
+}
